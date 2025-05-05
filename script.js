@@ -196,7 +196,7 @@ function createDayElement(date, className) {
         dayElement.classList.add('current');
     }
     
-    // 일요일 표시
+    // 일요일만 빨간색으로 표시 (0: 일요일)
     if (date.getDay() === 0) {
         dayElement.classList.add('sunday');
     }
