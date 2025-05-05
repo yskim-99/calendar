@@ -18,30 +18,30 @@ const lunarCalendarDB = {
   // 2023년 데이터 예시
   "2023-01-01": { 
     lunar: { year: 2022, month: 12, day: 10, isLeap: false }, 
-    ganzi: "庚寅" 
+    ganzi: "己未" 
   },
   
   // 2024년 데이터 예시
   "2024-01-01": { 
     lunar: { year: 2023, month: 11, day: 20, isLeap: false }, 
-    ganzi: "乙巳" 
+    ganzi: "甲子" 
   },
   
   // 2025년 중요 날짜 데이터
   "2025-01-01": { 
-    lunar: { year: 2024, month: 12, day: 1, isLeap: false }, 
-    ganzi: "丙辰" 
+    lunar: { year: 2024, month: 12, day: 2, isLeap: false }, 
+    ganzi: "庚午" 
   },
   "2025-01-29": { 
     lunar: { year: 2025, month: 1, day: 1, isLeap: false }, 
-    ganzi: "甲午" 
+    ganzi: "戊戌" 
   },
   "2025-05-01": { 
-    lunar: { year: 2025, month: 3, day: 13, isLeap: false }, 
+    lunar: { year: 2025, month: 4, day: 4, isLeap: false }, 
     ganzi: "庚午" 
   },
   "2025-05-05": { 
-    lunar: { year: 2025, month: 3, day: 17, isLeap: false }, 
+    lunar: { year: 2025, month: 4, day: 8, isLeap: false }, 
     ganzi: "甲戌" 
   },
   "2025-05-10": { 
@@ -49,8 +49,8 @@ const lunarCalendarDB = {
     ganzi: "己卯" 
   },
   "2025-12-31": { 
-    lunar: { year: 2025, month: 12, day: 12, isLeap: false }, 
-    ganzi: "丙辰" 
+    lunar: { year: 2025, month: 11, day: 12, isLeap: false }, 
+    ganzi: "甲戌" 
   }
   // 실제 사용 시에는 더 많은 날짜 추가
 };
