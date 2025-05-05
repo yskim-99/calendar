@@ -201,13 +201,28 @@ function createDayElement(date, className) {
         dayElement.classList.add('sunday');
     }
     
-    // 국경일 표시
+    // 국경일/공휴일 표시
     try {
         if (window.LunarCalendar && window.LunarCalendar.isHoliday(date.getFullYear(), date.getMonth() + 1, date.getDate())) {
             dayElement.classList.add('holiday');
         }
     } catch (e) {
         console.error('Holiday check error:', e);
+    }
+    
+    // 음력 정보 표시 (작은 글씨로)
+    try {
+        if (window.LunarCalendar) {
+            const lunarDate = window.LunarCalendar.getLunarDate(date);
+            if (lunarDate) {
+                const lunarDay = document.createElement('div');
+                lunarDay.classList.add('lunar-day');
+                lunarDay.textContent = lunarDate.day;
+                dayElement.appendChild(lunarDay);
+            }
+        }
+    } catch (e) {
+        console.error('Lunar date error:', e);
     }
     
     // 클릭 이벤트 리스너 추가
