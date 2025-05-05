@@ -237,48 +237,107 @@ function showDateDetail(date) {
     
     try {
         // 음력 정보 계산 및 표시
-        const lunarDate = window.LunarCalendar.getLunarDate(date);
-        const lunarText = `${lunarDate.year}년 ${lunarDate.isLeap ? '윤' : ''}${lunarDate.month}월 ${lunarDate.day}일`;
-        document.getElementById('lunar-date-value').textContent = lunarText;
-        
-        // 간지(일진) 표시
-        const ganZhi = window.LunarCalendar.getGanZhi(year, month, day);
-        document.getElementById('day-gan-ji-value').textContent = ganZhi;
-        
-        // 오늘과의 날짜 차이 계산 (수정: 순서 변경)
-        // 현재 날짜에서 선택한 날짜를 빼야 음수가 나옴 (미래 날짜를 선택한 경우)
-        const daysDiff = window.LunarCalendar.getDaysDifference(date, currentDate);
-        // 현재 날짜와 선택한 날짜의 차이를 계산하여 표시
-        // 미래 날짜는 음수, 과거 날짜는 양수, 오늘은 0으로 표시
-        const daysText = daysDiff === 0 
-            ? '오늘' 
-            : daysDiff > 0 
-                ? `+${daysDiff}일` 
-                : `${daysDiff}일`;
-        document.getElementById('days-diff-value').textContent = daysText;
-        
-        // 바이오리듬 계산 및 표시
-        const birthYear = parseInt('19' + birthdate.substring(0, 2));
-        const birthMonth = parseInt(birthdate.substring(2, 4));
-        const birthDay = parseInt(birthdate.substring(4, 6));
-        const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-        
-        const biorhythm = window.LunarCalendar.calculateBiorhythm(birthDate, date);
-        
-        // 바이오리듬 표시
-        updateBiorhythmBar('physical', biorhythm.physical);
-        updateBiorhythmBar('emotional', biorhythm.emotional);
-        updateBiorhythmBar('intellectual', biorhythm.intellectual);
-        
-        document.getElementById('physical-value').textContent = `${biorhythm.physical.toFixed(1)}%`;
-        document.getElementById('emotional-value').textContent = `${biorhythm.emotional.toFixed(1)}%`;
-        document.getElementById('intellectual-value').textContent = `${biorhythm.intellectual.toFixed(1)}%`;
+        if (window.LunarCalendar && typeof window.LunarCalendar.getLunarDate === 'function') {
+            const lunarDate = window.LunarCalendar.getLunarDate(date);
+            if (lunarDate) {
+                const lunarText = `${lunarDate.year}년 ${lunarDate.isLeap ? '윤' : ''}${lunarDate.month}월 ${lunarDate.day}일`;
+                document.getElementById('lunar-date-value').textContent = lunarText;
+            } else {
+                document.getElementById('lunar-date-value').textContent = '정보 없음';
+            }
+            
+            // 간지(일진) 표시
+            if (typeof window.LunarCalendar.getGanZhi === 'function') {
+                const ganZhi = window.LunarCalendar.getGanZhi(year, month, day);
+                document.getElementById('day-gan-ji-value').textContent = ganZhi;
+            } else {
+                document.getElementById('day-gan-ji-value').textContent = '정보 없음';
+            }
+            
+            // 오늘과의 날짜 차이 계산
+            if (typeof window.LunarCalendar.getDaysDifference === 'function') {
+                // 현재 날짜 객체 생성 (전역 변수 사용 대신 현재 시점의 날짜를 사용)
+                const now = new Date();
+                // 선택한 날짜와 현재 날짜의 차이를 계산
+                const daysDiff = window.LunarCalendar.getDaysDifference(date, now);
+                // 현재 날짜와 선택한 날짜의 차이를 계산하여 표시
+                // 미래 날짜는 음수, 과거 날짜는 양수, 오늘은 0으로 표시
+                const daysText = daysDiff === 0 
+                    ? '오늘' 
+                    : daysDiff > 0 
+                        ? `${daysDiff}일 전` 
+                        : `${Math.abs(daysDiff)}일 후`;
+                document.getElementById('days-diff-value').textContent = daysText;
+            } else {
+                document.getElementById('days-diff-value').textContent = '정보 없음';
+            }
+            
+            // 바이오리듬 계산 및 표시
+            if (birthdate && typeof window.LunarCalendar.calculateBiorhythm === 'function') {
+                // 생년월일 파싱
+                let birthYear;
+                if (birthdate.length === 6) {
+                    // YYMMDD 형식일 경우
+                    const yearPrefix = parseInt(birthdate.substring(0, 2)) < 50 ? '20' : '19';
+                    birthYear = parseInt(yearPrefix + birthdate.substring(0, 2));
+                } else {
+                    // 다른 형식이면 기본값 사용
+                    birthYear = 1957;
+                }
+                const birthMonth = parseInt(birthdate.substring(2, 4));
+                const birthDay = parseInt(birthdate.substring(4, 6));
+                
+                // 유효한 날짜인지 확인
+                if (!isNaN(birthYear) && !isNaN(birthMonth) && !isNaN(birthDay)) {
+                    const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+                    
+                    if (!isNaN(birthDate.getTime())) {
+                        const biorhythm = window.LunarCalendar.calculateBiorhythm(birthDate, date);
+                        
+                        // 바이오리듬 표시
+                        updateBiorhythmBar('physical', biorhythm.physical);
+                        updateBiorhythmBar('emotional', biorhythm.emotional);
+                        updateBiorhythmBar('intellectual', biorhythm.intellectual);
+                        
+                        document.getElementById('physical-value').textContent = `${biorhythm.physical.toFixed(1)}%`;
+                        document.getElementById('emotional-value').textContent = `${biorhythm.emotional.toFixed(1)}%`;
+                        document.getElementById('intellectual-value').textContent = `${biorhythm.intellectual.toFixed(1)}%`;
+                    } else {
+                        console.error('Invalid birth date');
+                        setDefaultBiorhythm();
+                    }
+                } else {
+                    console.error('Invalid birth date format');
+                    setDefaultBiorhythm();
+                }
+            } else {
+                setDefaultBiorhythm();
+            }
+        } else {
+            // LunarCalendar 객체가 없거나 필요한 메서드가 없을 경우
+            document.getElementById('lunar-date-value').textContent = '정보 없음';
+            document.getElementById('day-gan-ji-value').textContent = '정보 없음';
+            document.getElementById('days-diff-value').textContent = '정보 없음';
+            setDefaultBiorhythm();
+        }
     } catch (e) {
         console.error('Error in showDateDetail:', e);
         document.getElementById('lunar-date-value').textContent = '정보 없음';
         document.getElementById('day-gan-ji-value').textContent = '정보 없음';
         document.getElementById('days-diff-value').textContent = '정보 없음';
+        setDefaultBiorhythm();
     }
+}
+
+// 기본 바이오리듬 값 설정 (오류 발생 시)
+function setDefaultBiorhythm() {
+    updateBiorhythmBar('physical', 0);
+    updateBiorhythmBar('emotional', 0);
+    updateBiorhythmBar('intellectual', 0);
+    
+    document.getElementById('physical-value').textContent = '0.0%';
+    document.getElementById('emotional-value').textContent = '0.0%';
+    document.getElementById('intellectual-value').textContent = '0.0%';
 }
 
 // 바이오리듬 바 업데이트

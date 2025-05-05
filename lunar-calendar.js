@@ -47,73 +47,88 @@ function getDaysSince1900(date) {
 
 // 양력 날짜로부터 음력 날짜 계산
 function getLunarDate(date) {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    
-    // 유효한 연도 범위 체크 (1901-2099)
-    if (year < 1901 || year > 2099) {
-        return { year: year, month: month, day: day, isLeap: false };
-    }
-    
-    // 1900년 1월 31일부터의 일수
-    const offset = getDaysSince1900(date);
-    let daysPassed = offset;
-    
-    // 음력 데이터 인덱스
-    const dataIndex = year - 1901;
-    const lunarData = lunarInfo[dataIndex];
-    
-    // 음력 연도 시작일부터의 일수 계산
-    let lunarYear = 1901;
-    while (lunarYear < year) {
-        const lunarDays = getLunarYearDays(lunarYear);
-        daysPassed -= lunarDays;
-        lunarYear++;
-    }
-    
-    // 음력 월 계산
-    let lunarMonth = 1;
-    let isLeapMonth = false;
-    
-    // 해당 연도의 윤달 여부
-    const leapMonth = getLeapMonth(year);
-    
-    // 각 월의 일수를 고려하여 월 계산
-    while (daysPassed > 0) {
-        // 현재 월의 일수
-        let monthDays;
-        if (isLeapMonth) {
-            monthDays = getLeapMonthDays(year);
-            isLeapMonth = false;
-        } else {
-            monthDays = getMonthDays(year, lunarMonth);
-            
-            if (lunarMonth === leapMonth) {
-                // 윤달이 있는 경우, 다음은 윤달
-                isLeapMonth = true;
+    try {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        
+        // 유효한 연도 범위 체크 (1901-2099)
+        if (year < 1901 || year > 2099) {
+            console.warn('Year out of range (1901-2099):', year);
+            return null;
+        }
+        
+        // 1900년 1월 31일부터의 일수
+        const offset = getDaysSince1900(date);
+        let daysPassed = offset;
+        
+        // 음력 데이터 인덱스
+        const dataIndex = year - 1901;
+        if (dataIndex < 0 || dataIndex >= lunarInfo.length) {
+            console.warn('Invalid lunar data index:', dataIndex);
+            return null;
+        }
+        
+        const lunarData = lunarInfo[dataIndex];
+        
+        // 음력 연도 시작일부터의 일수 계산
+        let lunarYear = 1901;
+        while (lunarYear < year) {
+            const lunarDays = getLunarYearDays(lunarYear);
+            daysPassed -= lunarDays;
+            lunarYear++;
+        }
+        
+        // 음력 월 계산
+        let lunarMonth = 1;
+        let isLeapMonth = false;
+        
+        // 해당 연도의 윤달 여부
+        const leapMonth = getLeapMonth(year);
+        
+        // 각 월의 일수를 고려하여 월 계산
+        while (daysPassed > 0) {
+            // 현재 월의 일수
+            let monthDays;
+            if (isLeapMonth) {
+                monthDays = getLeapMonthDays(year);
+                isLeapMonth = false;
             } else {
-                lunarMonth++;
+                monthDays = getMonthDays(year, lunarMonth);
+                
+                if (lunarMonth === leapMonth) {
+                    // 윤달이 있는 경우, 다음은 윤달
+                    isLeapMonth = true;
+                } else {
+                    lunarMonth++;
+                }
+            }
+            
+            if (daysPassed <= monthDays) {
+                break;
+            }
+            
+            daysPassed -= monthDays;
+            
+            if (lunarMonth > 12) {
+                lunarYear++;
+                lunarMonth = 1;
             }
         }
         
-        daysPassed -= monthDays;
+        // 날짜 계산
+        const lunarDay = daysPassed;
         
-        if (lunarMonth > 12) {
-            lunarYear++;
-            lunarMonth = 1;
-        }
+        return {
+            year: lunarYear,
+            month: lunarMonth,
+            day: lunarDay,
+            isLeap: isLeapMonth
+        };
+    } catch (e) {
+        console.error('Error in getLunarDate:', e);
+        return null;
     }
-    
-    // 날짜 계산
-    let lunarDay = daysPassed + monthDays;
-    
-    return {
-        year: lunarYear,
-        month: lunarMonth,
-        day: lunarDay,
-        isLeap: isLeapMonth
-    };
 }
 
 // 해당 연도의 윤달 월 반환 (0은 윤달 없음)
@@ -137,6 +152,7 @@ function getLunarYearDays(year) {
 // 해당 연도, 월의 일수 계산
 function getMonthDays(year, month) {
     if (year < 1901 || year > 2099) return 30;
+    if (month < 1 || month > 12) return 30;
     
     return ((lunarInfo[year - 1901] & (0x10000 >> month)) ? 30 : 29);
 }
@@ -153,71 +169,119 @@ function getLeapMonthDays(year) {
 
 // 간지 계산 함수
 function getGanZhi(year, month, day) {
-    // 기준일: 1900년 1월 31일 (금성콰)
-    const baseDate = new Date(1900, 0, 31);
-    const targetDate = new Date(year, month - 1, day);
-    const dayDiff = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
-    
-    // 일간지 계산 (1900년 1월 31일은 '金성콰'로, 간지 배열의 시작 인덱스 조정)
-    const dayIndex = (dayDiff + 6) % 60;
-    const heavenlyStemIndex = dayIndex % 10;
-    const earthlyBranchIndex = dayIndex % 12;
-    
-    return heavenlyStems[heavenlyStemIndex] + earthlyBranches[earthlyBranchIndex];
+    try {
+        // 기준일: 1900년 1월 31일 (금성콰)
+        const baseDate = new Date(1900, 0, 31);
+        const targetDate = new Date(year, month - 1, day);
+        
+        // 유효한 날짜인지 확인
+        if (isNaN(targetDate.getTime())) {
+            console.error('Invalid date:', year, month, day);
+            return '정보 없음';
+        }
+        
+        const dayDiff = Math.floor((targetDate - baseDate) / (1000 * 60 * 60 * 24));
+        
+        // 일간지 계산 (1900년 1월 31일은 '金성콰'로, 간지 배열의 시작 인덱스 조정)
+        const dayIndex = (dayDiff + 6) % 60;
+        const heavenlyStemIndex = dayIndex % 10;
+        const earthlyBranchIndex = dayIndex % 12;
+        
+        return heavenlyStems[heavenlyStemIndex] + earthlyBranches[earthlyBranchIndex];
+    } catch (e) {
+        console.error('Error in getGanZhi:', e);
+        return '정보 없음';
+    }
 }
 
 // 연도의 간지 계산
 function getYearGanZhi(year) {
-    const offset = (year - 1900) % 60;
-    const heavenlyStemIndex = (offset + 6) % 10;  // 1900년은 庚(7번째) 시작이지만, 배열은 0부터 시작하므로 6
-    const earthlyBranchIndex = (offset + 0) % 12; // 1900년은 子(1번째) 시작이지만, 배열은 0부터 시작하므로 0
-    
-    return heavenlyStems[heavenlyStemIndex] + earthlyBranches[earthlyBranchIndex];
+    try {
+        if (year < 1900 || year > 2099) {
+            console.warn('Year out of range for getYearGanZhi:', year);
+            return '정보 없음';
+        }
+        
+        const offset = (year - 1900) % 60;
+        const heavenlyStemIndex = (offset + 6) % 10;  // 1900년은 庚(7번째) 시작이지만, 배열은 0부터 시작하므로 6
+        const earthlyBranchIndex = (offset + 0) % 12; // 1900년은 子(1번째) 시작이지만, 배열은 0부터 시작하므로 0
+        
+        return heavenlyStems[heavenlyStemIndex] + earthlyBranches[earthlyBranchIndex];
+    } catch (e) {
+        console.error('Error in getYearGanZhi:', e);
+        return '정보 없음';
+    }
 }
 
 // 바이오리듬 계산
 function calculateBiorhythm(birthdate, targetDate) {
-    // 생일부터 타겟 날짜까지의 일수
-    const diffTime = targetDate - birthdate;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    // 각 주기별 바이오리듬 계산 (신체: 23일, 감성: 28일, 지성: 33일)
-    const physical = Math.sin(2 * Math.PI * (diffDays / 23)) * 100;
-    const emotional = Math.sin(2 * Math.PI * (diffDays / 28)) * 100;
-    const intellectual = Math.sin(2 * Math.PI * (diffDays / 33)) * 100;
-    
-    return {
-        physical: Math.round(physical * 10) / 10,
-        emotional: Math.round(emotional * 10) / 10,
-        intellectual: Math.round(intellectual * 10) / 10
-    };
+    try {
+        // 두 날짜가 유효한지 확인
+        if (isNaN(birthdate.getTime()) || isNaN(targetDate.getTime())) {
+            console.error('Invalid date in calculateBiorhythm');
+            return { physical: 0, emotional: 0, intellectual: 0 };
+        }
+        
+        // 생일부터 타겟 날짜까지의 일수
+        const diffTime = targetDate - birthdate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        // 각 주기별 바이오리듬 계산 (신체: 23일, 감성: 28일, 지성: 33일)
+        const physical = Math.sin(2 * Math.PI * (diffDays / 23)) * 100;
+        const emotional = Math.sin(2 * Math.PI * (diffDays / 28)) * 100;
+        const intellectual = Math.sin(2 * Math.PI * (diffDays / 33)) * 100;
+        
+        return {
+            physical: Math.round(physical * 10) / 10,
+            emotional: Math.round(emotional * 10) / 10,
+            intellectual: Math.round(intellectual * 10) / 10
+        };
+    } catch (e) {
+        console.error('Error in calculateBiorhythm:', e);
+        return { physical: 0, emotional: 0, intellectual: 0 };
+    }
 }
 
 // 날짜 간의 차이 계산 (일 단위)
-// 중요: date2 - date1 순서로 계산 (미래 날짜에서 현재 날짜를 빼면 음수가 나옴)
 function getDaysDifference(date1, date2) {
-    const diffTime = date2 - date1;
-    return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    try {
+        // 두 날짜가 유효한지 확인
+        if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
+            console.error('Invalid date in getDaysDifference');
+            return 0;
+        }
+        
+        const diffTime = date2 - date1;
+        return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    } catch (e) {
+        console.error('Error in getDaysDifference:', e);
+        return 0;
+    }
 }
 
 // 국경일 체크
 function isHoliday(year, month, day) {
-    // 주요 국경일 (간단한 버전)
-    // 양력 기준 고정 휴일
-    if (
-        (month === 1 && day === 1) ||    // 신정
-        (month === 3 && day === 1) ||    // 삼일절
-        (month === 5 && day === 5) ||    // 어린이날
-        (month === 6 && day === 6) ||    // 현충일
-        (month === 8 && day === 15) ||   // 광복절
-        (month === 10 && day === 3) ||   // 개천절
-        (month === 10 && day === 9) ||   // 한글날
-        (month === 12 && day === 25)     // 크리스마스
-    ) {
-        return true;
+    try {
+        // 주요 국경일 (간단한 버전)
+        // 양력 기준 고정 휴일
+        if (
+            (month === 1 && day === 1) ||    // 신정
+            (month === 3 && day === 1) ||    // 삼일절
+            (month === 5 && day === 5) ||    // 어린이날
+            (month === 6 && day === 6) ||    // 현충일
+            (month === 8 && day === 15) ||   // 광복절
+            (month === 10 && day === 3) ||   // 개천절
+            (month === 10 && day === 9) ||   // 한글날
+            (month === 12 && day === 25)     // 크리스마스
+        ) {
+            return true;
+        }
+        
+        return false;
+    } catch (e) {
+        console.error('Error in isHoliday:', e);
+        return false;
     }
-    
-    return false;
 }
 
 // 모듈 내보내기
