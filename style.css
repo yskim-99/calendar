@@ -143,6 +143,12 @@ button:hover {
     padding: 10px 0;
     font-size: 14px;
     width: 100%;
+    color: #333; /* 기본 요일 색상 설정 */
+}
+
+/* 일요일 (첫번째 요일) 만 빨간색으로 */
+.weekday:first-child {
+    color: #e53935;
 }
 
 .sunday {
@@ -171,6 +177,7 @@ button:hover {
     width: 100%;
     min-width: 30px;
     min-height: 30px;
+    color: #333; /* 기본 날짜 색상 설정 */
 }
 
 .day:hover {
@@ -182,12 +189,19 @@ button:hover {
     font-weight: 700;
 }
 
+/* 일요일과 공휴일만 빨간색으로 */
 .day.holiday, .day.sunday {
     color: #e53935;
 }
 
+/* 토요일 색상 명시적 재정의 */
+.calendar-days > div:nth-child(7n) {
+    color: inherit;
+}
+
+/* 이전/다음 달 날짜 색상 */
 .prev-month-day, .next-month-day {
-    color: #ccc;
+    color: #ccc !important;
 }
 
 .current-month-day {
