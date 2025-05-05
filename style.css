@@ -134,6 +134,7 @@ button:hover {
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 .weekday {
@@ -141,6 +142,7 @@ button:hover {
     font-weight: 500;
     padding: 10px 0;
     font-size: 14px;
+    width: 100%;
 }
 
 .sunday {
@@ -151,6 +153,7 @@ button:hover {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
+    width: 100%;
 }
 
 .day {
@@ -165,6 +168,9 @@ button:hover {
     position: relative;
     transition: background-color 0.3s;
     padding: 5px;
+    width: 100%;
+    min-width: 30px;
+    min-height: 30px;
 }
 
 .day:hover {
@@ -193,6 +199,7 @@ button:hover {
     font-size: 10px;
     color: #666;
     margin-top: 2px;
+    text-align: center;
 }
 
 /* 날짜 세부 정보 화면 스타일 */
@@ -295,18 +302,68 @@ button:hover {
     z-index: 1;
 }
 
-/* 반응형 디자인 */
+/* 반응형 디자인 - 모바일 최적화 */
 @media (max-width: 500px) {
     .container {
         border-radius: 0;
         box-shadow: none;
+        width: 100%;
     }
     
     .day {
         font-size: 12px;
+        padding: 2px;
+        min-width: 0;
+        min-height: 0;
+        width: 100%;
+        height: auto;
+        border-radius: 5px;
     }
     
     .weekday {
         font-size: 12px;
+        padding: 5px 0;
+    }
+    
+    .lunar-day {
+        font-size: 8px;
+    }
+    
+    /* 그리드 레이아웃 강제 적용 */
+    .weekdays, .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        width: 100%;
+        gap: 2px;
+    }
+    
+    /* 각 셀이 동일한 너비를 가지도록 설정 */
+    .weekday, .day {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+/* 매우 작은 화면에 대한 추가 최적화 */
+@media (max-width: 360px) {
+    .container {
+        padding: 10px;
+    }
+    
+    #calendar-screen {
+        padding: 10px;
+    }
+    
+    .day {
+        font-size: 10px;
+        padding: 1px;
+    }
+    
+    .lunar-day {
+        font-size: 7px;
+    }
+    
+    .calendar-header h2 {
+        font-size: 16px;
     }
 }
