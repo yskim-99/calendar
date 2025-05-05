@@ -154,10 +154,8 @@ function renderCalendar(year, month) {
     // 이전 달 날짜
     for (let i = firstDayOfWeek; i > 0; i--) {
         const day = prevLastDay.getDate() - i + 1;
-        const dayElement = createDayElement(
-            new Date(year, month - 2, day),
-            'prev-month-day'
-        );
+        const date = new Date(year, month - 2, day);
+        const dayElement = createDayElement(date, 'prev-month-day');
         calendarDays.appendChild(dayElement);
     }
     
@@ -204,8 +202,12 @@ function createDayElement(date, className) {
     }
     
     // 국경일 표시
-    if (window.LunarCalendar.isHoliday(date.getFullYear(), date.getMonth() + 1, date.getDate())) {
-        dayElement.classList.add('holiday');
+    try {
+        if (window.LunarCalendar && window.LunarCalendar.isHoliday(date.getFullYear(), date.getMonth() + 1, date.getDate())) {
+            dayElement.classList.add('holiday');
+        }
+    } catch (e) {
+        console.error('Holiday check error:', e);
     }
     
     // 클릭 이벤트 리스너 추가
@@ -233,42 +235,50 @@ function showDateDetail(date) {
     const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
     document.getElementById('solar-date-value').textContent = `${year}년 ${month}월 ${day}일 (${weekdays[date.getDay()]}요일)`;
     
-    // 음력 정보 계산 및 표시
-    const lunarDate = window.LunarCalendar.getLunarDate(date);
-    const lunarText = `${lunarDate.year}년 ${lunarDate.isLeap ? '윤' : ''}${lunarDate.month}월 ${lunarDate.day}일`;
-    document.getElementById('lunar-date-value').textContent = lunarText;
-    
-    // 간지(일진) 표시
-    const ganZhi = window.LunarCalendar.getGanZhi(year, month, day);
-    document.getElementById('day-gan-ji-value').textContent = ganZhi;
-    
-    // 오늘과의 날짜 차이 계산 (수정: 순서 변경)
-    const daysDiff = window.LunarCalendar.getDaysDifference(date, currentDate);
-    // 현재 날짜와 선택한 날짜의 차이를 계산하여 표시
-    // 미래 날짜는 음수, 과거 날짜는 양수, 오늘은 0으로 표시
-    const daysText = daysDiff === 0 
-        ? '오늘' 
-        : daysDiff > 0 
-            ? `+${daysDiff}일` 
-            : `${daysDiff}일`;
-    document.getElementById('days-diff-value').textContent = daysText;
-    
-    // 바이오리듬 계산 및 표시
-    const birthYear = parseInt('19' + birthdate.substring(0, 2));
-    const birthMonth = parseInt(birthdate.substring(2, 4));
-    const birthDay = parseInt(birthdate.substring(4, 6));
-    const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-    
-    const biorhythm = window.LunarCalendar.calculateBiorhythm(birthDate, date);
-    
-    // 바이오리듬 표시
-    updateBiorhythmBar('physical', biorhythm.physical);
-    updateBiorhythmBar('emotional', biorhythm.emotional);
-    updateBiorhythmBar('intellectual', biorhythm.intellectual);
-    
-    document.getElementById('physical-value').textContent = `${biorhythm.physical.toFixed(1)}%`;
-    document.getElementById('emotional-value').textContent = `${biorhythm.emotional.toFixed(1)}%`;
-    document.getElementById('intellectual-value').textContent = `${biorhythm.intellectual.toFixed(1)}%`;
+    try {
+        // 음력 정보 계산 및 표시
+        const lunarDate = window.LunarCalendar.getLunarDate(date);
+        const lunarText = `${lunarDate.year}년 ${lunarDate.isLeap ? '윤' : ''}${lunarDate.month}월 ${lunarDate.day}일`;
+        document.getElementById('lunar-date-value').textContent = lunarText;
+        
+        // 간지(일진) 표시
+        const ganZhi = window.LunarCalendar.getGanZhi(year, month, day);
+        document.getElementById('day-gan-ji-value').textContent = ganZhi;
+        
+        // 오늘과의 날짜 차이 계산 (수정: 순서 변경)
+        // 현재 날짜에서 선택한 날짜를 빼야 음수가 나옴 (미래 날짜를 선택한 경우)
+        const daysDiff = window.LunarCalendar.getDaysDifference(date, currentDate);
+        // 현재 날짜와 선택한 날짜의 차이를 계산하여 표시
+        // 미래 날짜는 음수, 과거 날짜는 양수, 오늘은 0으로 표시
+        const daysText = daysDiff === 0 
+            ? '오늘' 
+            : daysDiff > 0 
+                ? `+${daysDiff}일` 
+                : `${daysDiff}일`;
+        document.getElementById('days-diff-value').textContent = daysText;
+        
+        // 바이오리듬 계산 및 표시
+        const birthYear = parseInt('19' + birthdate.substring(0, 2));
+        const birthMonth = parseInt(birthdate.substring(2, 4));
+        const birthDay = parseInt(birthdate.substring(4, 6));
+        const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+        
+        const biorhythm = window.LunarCalendar.calculateBiorhythm(birthDate, date);
+        
+        // 바이오리듬 표시
+        updateBiorhythmBar('physical', biorhythm.physical);
+        updateBiorhythmBar('emotional', biorhythm.emotional);
+        updateBiorhythmBar('intellectual', biorhythm.intellectual);
+        
+        document.getElementById('physical-value').textContent = `${biorhythm.physical.toFixed(1)}%`;
+        document.getElementById('emotional-value').textContent = `${biorhythm.emotional.toFixed(1)}%`;
+        document.getElementById('intellectual-value').textContent = `${biorhythm.intellectual.toFixed(1)}%`;
+    } catch (e) {
+        console.error('Error in showDateDetail:', e);
+        document.getElementById('lunar-date-value').textContent = '정보 없음';
+        document.getElementById('day-gan-ji-value').textContent = '정보 없음';
+        document.getElementById('days-diff-value').textContent = '정보 없음';
+    }
 }
 
 // 바이오리듬 바 업데이트

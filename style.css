@@ -174,8 +174,16 @@ button:hover {
     font-weight: 700;
 }
 
-.day.holiday, .sunday {
+.day.holiday, .day.sunday {
     color: #e53935;
+}
+
+.prev-month-day, .next-month-day {
+    color: #ccc;
+}
+
+.current-month-day {
+    color: #333;
 }
 
 /* 날짜 세부 정보 화면 스타일 */
