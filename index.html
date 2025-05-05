@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>만능 달력</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 사용자 정보 입력 화면 -->
+        <div id="user-info-screen">
+            <h1>만능 달력</h1>
+            <div class="user-form">
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="user-type" value="default" checked> 기본값 사용 (yskim, 571111)
+                    </label>
+                    <label>
+                        <input type="radio" name="user-type" value="custom"> 직접 입력
+                    </label>
+                </div>
+                <div id="custom-user-info" style="display: none;">
+                    <div class="input-group">
+                        <label for="username">이름:</label>
+                        <input type="text" id="username" placeholder="이름 입력">
+                    </div>
+                    <div class="input-group">
+                        <label for="birthdate">생년월일 (YYMMDD):</label>
+                        <input type="text" id="birthdate" placeholder="예: 571111">
+                    </div>
+                </div>
+                <button id="start-btn">시작하기</button>
+            </div>
+        </div>
+
+        <!-- 달력 화면 -->
+        <div id="calendar-screen" style="display: none;">
+            <div class="calendar-header">
+                <button id="prev-month">&lt;</button>
+                <h2 id="calendar-title">2025년(乙巳) 5월</h2>
+                <button id="next-month">&gt;</button>
+            </div>
+            <div class="calendar-nav">
+                <div class="year-month-select">
+                    <select id="year-select"></select>
+                    <select id="month-select"></select>
+                    <button id="go-to-date">이동</button>
+                </div>
+            </div>
+            <div class="weekdays">
+                <div class="weekday sunday">일</div>
+                <div class="weekday">월</div>
+                <div class="weekday">화</div>
+                <div class="weekday">수</div>
+                <div class="weekday">목</div>
+                <div class="weekday">금</div>
+                <div class="weekday">토</div>
+            </div>
+            <div id="calendar-days" class="calendar-days"></div>
+        </div>
+
+        <!-- 날짜 세부 정보 화면 -->
+        <div id="date-detail-screen" style="display: none;">
+            <div class="detail-header">
+                <button id="back-to-calendar">← 달력으로 돌아가기</button>
+                <h2 id="detail-title">날짜 정보</h2>
+            </div>
+            <div class="detail-content">
+                <div id="solar-date" class="detail-item">
+                    <span class="detail-label">양력:</span>
+                    <span id="solar-date-value" class="detail-value"></span>
+                </div>
+                <div id="lunar-date" class="detail-item">
+                    <span class="detail-label">음력:</span>
+                    <span id="lunar-date-value" class="detail-value"></span>
+                </div>
+                <div id="day-gan-ji" class="detail-item">
+                    <span class="detail-label">일진:</span>
+                    <span id="day-gan-ji-value" class="detail-value"></span>
+                </div>
+                <div id="days-diff" class="detail-item">
+                    <span class="detail-label">오늘 기준:</span>
+                    <span id="days-diff-value" class="detail-value"></span>
+                </div>
+                <div id="biorhythm" class="detail-item">
+                    <span class="detail-label">바이오리듬:</span>
+                    <div id="biorhythm-chart" class="biorhythm-chart">
+                        <div class="bio-item">
+                            <span class="bio-label">신체(P):</span>
+                            <div class="bio-bar-container">
+                                <div id="physical-bar" class="bio-bar"></div>
+                                <span id="physical-value" class="bio-value"></span>
+                            </div>
+                        </div>
+                        <div class="bio-item">
+                            <span class="bio-label">감성(E):</span>
+                            <div class="bio-bar-container">
+                                <div id="emotional-bar" class="bio-bar"></div>
+                                <span id="emotional-value" class="bio-value"></span>
+                            </div>
+                        </div>
+                        <div class="bio-item">
+                            <span class="bio-label">지성(I):</span>
+                            <div class="bio-bar-container">
+                                <div id="intellectual-bar" class="bio-bar"></div>
+                                <span id="intellectual-value" class="bio-value"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+    <script src="lunar-calendar.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
