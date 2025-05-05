@@ -242,8 +242,10 @@ function showDateDetail(date) {
     const ganZhi = window.LunarCalendar.getGanZhi(year, month, day);
     document.getElementById('day-gan-ji-value').textContent = ganZhi;
     
-    // 오늘과의 날짜 차이 계산
-    const daysDiff = window.LunarCalendar.getDaysDifference(currentDate, date);
+    // 오늘과의 날짜 차이 계산 (수정: 순서 변경)
+    const daysDiff = window.LunarCalendar.getDaysDifference(date, currentDate);
+    // 현재 날짜와 선택한 날짜의 차이를 계산하여 표시
+    // 미래 날짜는 음수, 과거 날짜는 양수, 오늘은 0으로 표시
     const daysText = daysDiff === 0 
         ? '오늘' 
         : daysDiff > 0 
