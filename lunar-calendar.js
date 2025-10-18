@@ -1,6 +1,6 @@
 /**
  * 음력 관련 계산을 위한 라이브러리
- * 내장 데이터베이스를 사용하여 정확한 음력 및 일진 정보 제공
+ * CSV 데이터베이스를 사용하여 정확한 음력 및 일진 정보 제공
  */
 
 // 간지 배열 (참고용)
@@ -8,75 +8,76 @@ const heavenlyStems = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '
 const earthlyBranches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
 const chineseYears = ['鼠', '牛', '虎', '兎', '龍', '蛇', '馬', '羊', '猴', '鷄', '犬', '猪'];
 
-/**
- * 음력 데이터베이스 (한국천문연구원 기준)
- * 날짜 형식: YYYY-MM-DD를 키로 사용
- * 값: 음력 날짜, 윤달 여부, 일진 정보 포함
- * 실제 사용 시에는 더 많은 날짜(예: 2020-2030년)를 포함해야 함
- */
-const lunarCalendarDB = {
-  // 2023년 데이터 예시
-  "2023-01-01": { 
-    lunar: { year: 2022, month: 12, day: 10, isLeap: false }, 
-    ganzi: "己未" 
-  },
-  
-  // 2024년 데이터 예시
-  "2024-01-01": { 
-    lunar: { year: 2023, month: 11, day: 20, isLeap: false }, 
-    ganzi: "甲子" 
-  },
-  
-  // 2025년 중요 날짜 데이터
-  "2025-01-01": { 
-    lunar: { year: 2024, month: 12, day: 2, isLeap: false }, 
-    ganzi: "庚午" 
-  },
-  "2025-01-29": { 
-    lunar: { year: 2025, month: 1, day: 1, isLeap: false }, 
-    ganzi: "戊戌" 
-  },
-  "2025-05-01": { 
-    lunar: { year: 2025, month: 4, day: 4, isLeap: false }, 
-    ganzi: "庚午" 
-  },
-  "2025-05-05": { 
-    lunar: { year: 2025, month: 4, day: 8, isLeap: false }, 
-    ganzi: "甲戌" 
-  },
-  "2025-05-10": { 
-    lunar: { year: 2025, month: 4, day: 13, isLeap: false }, 
-    ganzi: "己卯" 
-  },
-  "2025-12-31": { 
-    lunar: { year: 2025, month: 11, day: 12, isLeap: false }, 
-    ganzi: "甲戌" 
-  }
-  // 실제 사용 시에는 더 많은 날짜 추가
-};
+// 한글 간지 배열 추가
+const heavenlyStemsKorean = ['갑', '을', '병', '정', '무', '기', '경', '신', '임', '계'];
+const earthlyBranchesKorean = ['자', '축', '인', '묘', '진', '사', '오', '미', '신', '유', '술', '해'];
 
 /**
- * 국경일/명절 데이터 (2020-2030년)
+ * 음력 데이터베이스
+ * 날짜 형식: YYYY-MM-DD를 키로 사용
+ * 값: 음력 날짜, 윤달 여부, 일진 정보 포함
  */
-const holidaysDB = {
-  // 2025년 주요 휴일 예시
-  "2025-01-01": { name: "신정", isHoliday: true },
-  "2025-01-29": { name: "설날", isHoliday: true },
-  "2025-01-30": { name: "설날", isHoliday: true },
-  "2025-01-31": { name: "설날", isHoliday: true },
-  "2025-03-01": { name: "삼일절", isHoliday: true },
-  "2025-05-05": { name: "어린이날/석가탄신일", isHoliday: true },
-  "2025-05-06": { name: "대체공휴일", isHoliday: true },
-  "2025-06-06": { name: "현충일", isHoliday: true },
-  "2025-08-15": { name: "광복절", isHoliday: true },
-  "2025-10-03": { name: "개천절", isHoliday: true },
-  "2025-10-06": { name: "추석", isHoliday: true },
-  "2025-10-07": { name: "추석", isHoliday: true },
-  "2025-10-08": { name: "추석", isHoliday: true },
-  "2025-10-09": { name: "한글날", isHoliday: true },
-  "2025-12-25": { name: "크리스마스", isHoliday: true }
-  // 실제 사용 시에는 더 많은 날짜 추가
-};
+let lunarCalendarDB = {};
+let isDataLoaded = false;
+
+/**
+ * CSV 파일에서 음력 데이터 로드
+ * @returns {Promise} - 로드 완료 Promise
+ */
+async function loadLunarCalendarData() {
+  try {
+    console.log('음력 데이터 로드 시작...');
+    const response = await fetch('lunar_solar_calendar.csv');
+    if (!response.ok) {
+      throw new Error(`Failed to load lunar calendar data: ${response.status}`);
+    }
+    
+    const csvText = await response.text();
+    const rows = csvText.trim().split('\n');
+    
+    // 첫 번째 행은 헤더이므로 건너뛰기
+    for (let i = 1; i < rows.length; i++) {
+      const line = rows[i].trim();
+      if (!line) continue;
+      
+      const values = line.split(',');
+      if (values.length < 7) continue; // 최소 필요 필드 검사
+      
+      // 양력 날짜
+      const solarYear = parseInt(values[0]);
+      const solarMonth = parseInt(values[1]);
+      const solarDay = parseInt(values[2]);
+      
+      // 유효한 날짜인지 확인
+      if (isNaN(solarYear) || isNaN(solarMonth) || isNaN(solarDay)) {
+        continue;
+      }
+      
+      // 날짜 키 생성
+      const dateKey = `${solarYear}-${String(solarMonth).padStart(2, '0')}-${String(solarDay).padStart(2, '0')}`;
+      
+      // 음력 정보 구성
+      lunarCalendarDB[dateKey] = {
+        lunar: {
+          year: parseInt(values[3]),
+          month: parseInt(values[4]),
+          day: parseInt(values[5]),
+          isLeap: parseInt(values[6]) === 1
+        },
+        // 일진 정보 (8번째 필드가 있으면 사용, 없으면 null)
+        ganzi: values.length > 7 && values[7] ? values[7].trim() : null
+      };
+    }
+    
+    console.log(`음력 데이터 로드 완료: ${Object.keys(lunarCalendarDB).length}개 항목`);
+    isDataLoaded = true;
+    return true;
+  } catch (error) {
+    console.error('음력 데이터 로드 실패:', error);
+    isDataLoaded = false;
+    return false;
+  }
+}
 
 /**
  * 날짜를 문자열 키로 변환하는 함수
@@ -96,38 +97,53 @@ function getDateKey(date) {
  * @returns {Object|null} - 음력 정보 객체 또는 null
  */
 function getLunarData(date) {
+  if (!isDataLoaded) {
+    console.warn('음력 데이터가 아직 로드되지 않았습니다.');
+    return null;
+  }
   const dateKey = getDateKey(date);
   return lunarCalendarDB[dateKey] || null;
 }
 
 /**
  * 양력 날짜로부터 음력 날짜 계산
- * 데이터베이스에서 검색, 없으면 인접 날짜로부터 추정
+ * 데이터베이스에서 검색, 없으면 null 반환
  * @param {Date} date - 양력 날짜
  * @returns {Object|null} - 음력 날짜 정보
  */
 function getLunarDate(date) {
+  // 데이터베이스 범위 체크
+  const year = date.getFullYear();
+  if (year < 1900 || year > 2049) {
+    console.warn('음력 데이터는 1900-2049년 범위만 지원합니다:', year);
+    return null;
+  }
+  
   // 데이터베이스에서 직접 검색
   const lunarData = getLunarData(date);
   if (lunarData) {
     return lunarData.lunar;
   }
   
-  // 데이터베이스에 없는 경우 인접한 날짜로부터 추정
-  // 여기서는 간단한 예시로, 실제로는 더 복잡한 로직이 필요할 수 있음
   console.warn('데이터베이스에서 정확한 음력 정보를 찾을 수 없습니다:', getDateKey(date));
   return null;
 }
 
 /**
  * 일진(간지) 계산 함수
- * 데이터베이스에서 검색, 없으면 인접 날짜로부터 추정
+ * 데이터베이스에서 검색, 없으면 계산
  * @param {number} year - 연도
  * @param {number} month - 월 (1-12)
  * @param {number} day - 일
- * @returns {string} - 일진 (예: '甲子')
+ * @returns {string} - 일진 (예: '기해(己亥) 정축(丁丑) 갑술(甲戌)')
  */
 function getGanZhi(year, month, day) {
+  // 데이터베이스 범위 체크
+  if (year < 1900 || year > 2049) {
+    console.warn('일진 데이터는 1900-2049년 범위만 지원합니다:', year);
+    return '정보 없음';
+  }
+  
   const date = new Date(year, month - 1, day);
   
   // 데이터베이스에서 직접 검색
@@ -136,31 +152,51 @@ function getGanZhi(year, month, day) {
     return lunarData.ganzi;
   }
   
-  // 데이터베이스에 없는 경우 경고 표시
-  console.warn('데이터베이스에서 정확한 일진 정보를 찾을 수 없습니다:', getDateKey(date));
+  // 데이터베이스에 없는 경우 계산 (1900년 1월 1일은 '경자일')
+  try {
+    const baseDate = new Date(1900, 0, 1);
+    const diffDays = Math.floor((date - baseDate) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays >= 0) {
+      const heavenlyStemIndex = (diffDays + 6) % 10; // 경(7번째)에서 시작하지만 배열은 0부터
+      const earthlyBranchIndex = (diffDays + 0) % 12; // 자(1번째)에서 시작하지만 배열은 0부터
+      
+      // 한글 간지와 한자 간지 모두 반환
+      const koreanGanzi = heavenlyStemsKorean[heavenlyStemIndex] + earthlyBranchesKorean[earthlyBranchIndex];
+      const chineseGanzi = heavenlyStems[heavenlyStemIndex] + earthlyBranches[earthlyBranchIndex];
+      
+      return `${koreanGanzi}(${chineseGanzi})`;
+    }
+  } catch (e) {
+    console.error('일진 계산 오류:', e);
+  }
+  
   return '정보 없음';
 }
 
 /**
  * 연도의 간지 계산
  * @param {number} year - 연도
- * @returns {string} - 연도 간지 (예: '甲子')
+ * @returns {string} - 연도 간지 (예: '乙巳')
  */
 function getYearGanZhi(year) {
-  // 해당 연도의 첫날로 검색
-  const date = new Date(year, 0, 1);
-  const lunarData = getLunarData(date);
-  
-  if (lunarData && lunarData.yearGanzi) {
-    return lunarData.yearGanzi;
+  try {
+    // 데이터베이스 범위 체크
+    if (year < 1900 || year > 2049) {
+      console.warn('간지 데이터는 1900-2049년 범위만 지원합니다:', year);
+      return '정보 없음';
+    }
+    
+    // 계산식 사용 (1900년은 庚子년)
+    const offset = (year - 1900) % 60;
+    const heavenlyStemIndex = (offset + 6) % 10;  // 1900년은 庚(7번째) 시작이지만, 배열은 0부터 시작하므로 6
+    const earthlyBranchIndex = (offset + 0) % 12; // 1900년은 子(1번째) 시작이지만, 배열은 0부터 시작하므로 0
+    
+    return heavenlyStems[heavenlyStemIndex] + earthlyBranches[earthlyBranchIndex];
+  } catch (e) {
+    console.error('연간지 계산 오류:', e);
+    return '정보 없음';
   }
-  
-  // 데이터베이스에 없거나 yearGanzi 필드가 없는 경우, 간단한 계산식 사용
-  const offset = (year - 1900) % 60;
-  const heavenlyStemIndex = (offset + 6) % 10;  // 1900년은 庚(7번째) 시작이지만, 배열은 0부터 시작하므로 6
-  const earthlyBranchIndex = (offset + 0) % 12; // 1900년은 子(1번째) 시작이지만, 배열은 0부터 시작하므로 0
-  
-  return heavenlyStems[heavenlyStemIndex] + earthlyBranches[earthlyBranchIndex];
 }
 
 /**
@@ -252,7 +288,7 @@ function isHoliday(year, month, day) {
       return true;
     }
     
-    // 토요일과 일요일도 표시하려면 추가
+    // 토요일과 일요일도 표시
     const dayOfWeek = date.getDay();
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       return true;
@@ -266,9 +302,34 @@ function isHoliday(year, month, day) {
 }
 
 /**
+ * 국경일/명절 데이터 (2020-2030년)
+ */
+const holidaysDB = {
+  // 2025년 주요 휴일
+  "2025-01-01": { name: "신정", isHoliday: true },
+  "2025-01-28": { name: "설날", isHoliday: true },
+  "2025-01-29": { name: "설날", isHoliday: true },
+  "2025-01-30": { name: "설날", isHoliday: true },
+  "2025-03-01": { name: "삼일절", isHoliday: true },
+  "2025-03-03": { name: "대체공휴일", isHoliday: true },
+  "2025-05-05": { name: "어린이날", isHoliday: true },
+  "2025-05-06": { name: "석가탄신일", isHoliday: true },
+  "2025-06-06": { name: "현충일", isHoliday: true },
+  "2025-08-15": { name: "광복절", isHoliday: true },
+  "2025-10-03": { name: "개천절", isHoliday: true },
+  "2025-10-05": { name: "추석", isHoliday: true },
+  "2025-10-06": { name: "추석", isHoliday: true },
+  "2025-10-07": { name: "추석", isHoliday: true },
+  "2025-10-08": { name: "대체공휴일", isHoliday: true },
+  "2025-10-09": { name: "한글날", isHoliday: true },
+  "2025-12-25": { name: "크리스마스", isHoliday: true }
+};
+
+/**
  * 모듈 내보내기
  */
 window.LunarCalendar = {
+  initialize: loadLunarCalendarData,
   getLunarDate,
   getGanZhi,
   getYearGanZhi,

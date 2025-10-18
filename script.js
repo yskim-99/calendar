@@ -11,7 +11,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
-function initializeApp() {
+async function initializeApp() {
+    // 음력 데이터 초기화 - 추가된 부분
+    if (window.LunarCalendar && typeof window.LunarCalendar.initialize === 'function') {
+        try {
+            await window.LunarCalendar.initialize();
+            console.log('음력 데이터 초기화 완료');
+        } catch (e) {
+            console.error('음력 데이터 초기화 오류:', e);
+        }
+    }
+    
     // 사용자 정보 화면 이벤트 리스너
     document.querySelectorAll('input[name="user-type"]').forEach(radio => {
         radio.addEventListener('change', toggleUserInfoForm);
@@ -74,8 +84,8 @@ function populateYearMonthOptions() {
     const yearSelect = document.getElementById('year-select');
     const monthSelect = document.getElementById('month-select');
     
-    // 연도 옵션 (1901-2099)
-    for (let y = 1901; y <= 2099; y++) {
+    // 연도 옵션 (1900-2049)
+    for (let y = 1900; y <= 2049; y++) {
         const option = document.createElement('option');
         option.value = y;
         option.textContent = `${y}년`;
@@ -123,9 +133,9 @@ function navigateMonth(step) {
         currentYear--;
     }
     
-    // 유효 범위 체크 (1901-2099)
-    if (currentYear < 1901) currentYear = 1901;
-    if (currentYear > 2099) currentYear = 2099;
+    // 유효 범위 체크 (1900-2049)
+    if (currentYear < 1900) currentYear = 1900;
+    if (currentYear > 2049) currentYear = 2049;
     
     renderCalendar(currentYear, currentMonth);
 }
@@ -271,12 +281,11 @@ function showDateDetail(date) {
             
             // 오늘과의 날짜 차이 계산
             if (typeof window.LunarCalendar.getDaysDifference === 'function') {
-                // 현재 날짜 객체 생성 (전역 변수 사용 대신 현재 시점의 날짜를 사용)
+                // 현재 날짜 객체 생성
                 const now = new Date();
                 // 선택한 날짜와 현재 날짜의 차이를 계산
                 const daysDiff = window.LunarCalendar.getDaysDifference(date, now);
                 // 현재 날짜와 선택한 날짜의 차이를 계산하여 표시
-                // 미래 날짜는 음수, 과거 날짜는 양수, 오늘은 0으로 표시
                 const daysText = daysDiff === 0 
                     ? '오늘' 
                     : daysDiff > 0 
