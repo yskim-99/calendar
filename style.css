@@ -83,6 +83,9 @@ button:hover {
 /* 달력 화면 스타일 */
 #calendar-screen {
     padding: 20px;
+    overflow-x: auto; /* 좌우 스크롤 가능하도록 수정 */
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
 }
 
 .calendar-header {
@@ -135,6 +138,7 @@ button:hover {
     gap: 5px;
     margin-bottom: 10px;
     text-align: center;
+    min-width: 280px; /* 최소 너비 설정 */
 }
 
 .weekday {
@@ -143,7 +147,7 @@ button:hover {
     padding: 10px 0;
     font-size: 14px;
     width: 100%;
-    color: #333; /* 기본 요일 색상 설정 */
+    color: #333;
 }
 
 /* 일요일 (첫번째 요일) 만 빨간색으로 */
@@ -160,6 +164,7 @@ button:hover {
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
     width: 100%;
+    min-width: 280px; /* 최소 너비 설정 */
 }
 
 .day {
@@ -177,7 +182,7 @@ button:hover {
     width: 100%;
     min-width: 30px;
     min-height: 30px;
-    color: #333; /* 기본 날짜 색상 설정 */
+    color: #333;
 }
 
 .day:hover {
@@ -281,9 +286,9 @@ button:hover {
     flex: 1;
     background-color: #eee;
     border-radius: 5px;
-    height: 15px;
+    height: 20px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     align-items: center;
 }
@@ -294,18 +299,31 @@ button:hover {
     position: absolute;
     left: 0;
     top: 0;
+    transition: width 0.3s ease;
+}
+
+/* 양수값 스타일 (색상 채우기) */
+.bio-bar.positive {
+    background-color: currentColor;
+}
+
+/* 음수값 스타일 (윤곽선만) */
+.bio-bar.negative {
+    background-color: transparent;
+    border: 2px solid currentColor;
+    box-sizing: border-box;
 }
 
 #physical-bar {
-    background-color: #4285f4;
+    color: #4285f4;
 }
 
 #emotional-bar {
-    background-color: #ea4335;
+    color: #ea4335;
 }
 
 #intellectual-bar {
-    background-color: #34a853;
+    color: #34a853;
 }
 
 .bio-value {
@@ -314,6 +332,7 @@ button:hover {
     color: #333;
     position: relative;
     z-index: 1;
+    font-weight: 500;
 }
 
 /* 반응형 디자인 - 모바일 최적화 */
@@ -322,6 +341,11 @@ button:hover {
         border-radius: 0;
         box-shadow: none;
         width: 100%;
+    }
+    
+    #calendar-screen {
+        padding: 10px;
+        overflow-x: auto; /* 모바일에서도 좌우 스크롤 가능 */
     }
     
     .day {
@@ -349,6 +373,7 @@ button:hover {
         grid-template-columns: repeat(7, 1fr);
         width: 100%;
         gap: 2px;
+        min-width: 280px; /* 최소 너비 유지 */
     }
     
     /* 각 셀이 동일한 너비를 가지도록 설정 */
