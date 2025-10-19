@@ -83,10 +83,16 @@ button:hover {
 /* 달력 화면 스타일 */
 #calendar-screen {
     padding: 20px;
+    width: 100%;
+    overflow: visible;
+}
+
+/* 달력 래퍼 - 스크롤 가능 영역 */
+.calendar-wrapper {
+    width: 100%;
     overflow-x: auto;
     overflow-y: visible;
     -webkit-overflow-scrolling: touch;
-    /* 터치 스크롤 활성화 */
     touch-action: pan-x pan-y;
 }
 
@@ -107,6 +113,7 @@ button:hover {
     align-items: center;
     padding: 0;
     font-size: 18px;
+    flex-shrink: 0;
 }
 
 .calendar-header h2 {
@@ -114,6 +121,7 @@ button:hover {
     color: #333;
     text-align: center;
     font-size: 18px;
+    white-space: nowrap;
 }
 
 .calendar-nav {
@@ -353,10 +361,13 @@ button:hover {
     
     #calendar-screen {
         padding: 10px;
-        overflow-x: auto;
-        overflow-y: visible;
-        -webkit-overflow-scrolling: touch;
         width: 100%;
+    }
+    
+    .calendar-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
     
     .weekdays {
