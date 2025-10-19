@@ -83,9 +83,11 @@ button:hover {
 /* 달력 화면 스타일 */
 #calendar-screen {
     padding: 20px;
-    overflow-x: auto; /* 좌우 스크롤 가능하도록 수정 */
+    overflow-x: auto;
     overflow-y: visible;
-    -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
+    -webkit-overflow-scrolling: touch;
+    /* 터치 스크롤 활성화 */
+    touch-action: pan-x pan-y;
 }
 
 .calendar-header {
@@ -93,6 +95,7 @@ button:hover {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
+    min-width: fit-content;
 }
 
 .calendar-header button {
@@ -138,7 +141,7 @@ button:hover {
     gap: 5px;
     margin-bottom: 10px;
     text-align: center;
-    min-width: 280px; /* 최소 너비 설정 */
+    min-width: 350px;
 }
 
 .weekday {
@@ -164,7 +167,7 @@ button:hover {
     grid-template-columns: repeat(7, 1fr);
     gap: 5px;
     width: 100%;
-    min-width: 280px; /* 최소 너비 설정 */
+    min-width: 350px;
 }
 
 .day {
@@ -180,8 +183,8 @@ button:hover {
     transition: background-color 0.3s;
     padding: 5px;
     width: 100%;
-    min-width: 30px;
-    min-height: 30px;
+    min-width: 40px;
+    min-height: 40px;
     color: #333;
 }
 
@@ -337,69 +340,77 @@ button:hover {
 
 /* 반응형 디자인 - 모바일 최적화 */
 @media (max-width: 500px) {
+    body {
+        padding: 0;
+    }
+    
     .container {
         border-radius: 0;
         box-shadow: none;
         width: 100%;
+        max-width: 100vw;
     }
     
     #calendar-screen {
         padding: 10px;
-        overflow-x: auto; /* 모바일에서도 좌우 스크롤 가능 */
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+    
+    .weekdays {
+        min-width: 350px;
+    }
+    
+    .calendar-days {
+        min-width: 350px;
     }
     
     .day {
-        font-size: 12px;
-        padding: 2px;
-        min-width: 0;
-        min-height: 0;
-        width: 100%;
-        height: auto;
-        border-radius: 5px;
+        font-size: 13px;
+        padding: 3px;
+        min-width: 45px;
+        min-height: 45px;
     }
     
     .weekday {
-        font-size: 12px;
-        padding: 5px 0;
+        font-size: 13px;
+        padding: 8px 0;
     }
     
     .lunar-day {
-        font-size: 8px;
-    }
-    
-    /* 그리드 레이아웃 강제 적용 */
-    .weekdays, .calendar-days {
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        width: 100%;
-        gap: 2px;
-        min-width: 280px; /* 최소 너비 유지 */
-    }
-    
-    /* 각 셀이 동일한 너비를 가지도록 설정 */
-    .weekday, .day {
-        width: 100%;
-        box-sizing: border-box;
+        font-size: 9px;
     }
 }
 
 /* 매우 작은 화면에 대한 추가 최적화 */
 @media (max-width: 360px) {
     .container {
-        padding: 10px;
+        padding: 0;
     }
     
     #calendar-screen {
-        padding: 10px;
+        padding: 8px;
+    }
+    
+    .weekdays {
+        min-width: 320px;
+    }
+    
+    .calendar-days {
+        min-width: 320px;
     }
     
     .day {
-        font-size: 10px;
-        padding: 1px;
+        font-size: 12px;
+        padding: 2px;
+        min-width: 40px;
+        min-height: 40px;
     }
     
     .lunar-day {
-        font-size: 7px;
+        font-size: 8px;
     }
     
     .calendar-header h2 {
